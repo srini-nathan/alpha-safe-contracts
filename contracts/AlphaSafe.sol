@@ -63,11 +63,6 @@ contract AlphaSafe is
     // Mapping to keep track of all hashes (message or transaction) that have been approved by ANY owners
     mapping(address => mapping(bytes32 => uint256)) public approvedHashes;
 
-    modifier onlyOwner() {
-        require(isOwner(msg.sender), "AS01");
-        _;
-    }
-
     // This constructor ensures that this contract can only be used as a master copy for Proxy contracts
     constructor() {
         // By setting the threshold it is not possible to call setup anymore,
@@ -108,7 +103,7 @@ contract AlphaSafe is
         address gasToken,
         address payable refundReceiver,
         bytes memory signatures
-    ) public payable virtual onlyOwner returns (bool success) {
+    ) public payable virtual returns (bool success) {
         bytes32 txHash;
         // Use scope here to limit variable lifetime and prevent `stack too deep` errors
         {
