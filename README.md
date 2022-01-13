@@ -17,14 +17,14 @@ npx hardhat test test <folder>/<file>
 
 ## Project Structure: 
 
-### /contracts :
+### / contracts :
 
 #### Core protocol of Alpha Safe
 
-### /scripts : 
+### / scripts : 
 
 #### Deployment scripts
 
-### /test : 
+### / test : 
 
 #### Test cases for the protocol
