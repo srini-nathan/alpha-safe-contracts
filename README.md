@@ -1,1 +1,5 @@
-# alpha-safe-contracts
+# Alpha Safe Contracts 
+
+```bash 
+npm i
+
