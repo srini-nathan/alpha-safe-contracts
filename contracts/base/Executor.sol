@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: LGPL-3.0-only
-pragma solidity >=0.7.0 <0.9.0;
+pragma solidity >=0.8.0 <0.9.0;
 import "../common/Enum.sol";
 
 /// @title Executor - A contract that can execute transactions
-/// @author Richard Meissner - <richard@gnosis.pm>
+/// @author Modified from Gnosis Safe.
 contract Executor {
     function execute(
         address to,

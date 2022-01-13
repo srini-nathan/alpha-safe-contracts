@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: LGPL-3.0-only
-pragma solidity >=0.7.0 <0.9.0;
+pragma solidity >=0.8.0 <0.9.0;
 
 /// @title SignatureDecoder - Decodes signatures that a encoded as bytes
-/// @author Richard Meissner - <richard@gnosis.pm>
+/// @author Modified from Gnosis Safe.
 contract SignatureDecoder {
     /// @dev divides bytes signature into `uint8 v, bytes32 r, bytes32 s`.
     /// @notice Make sure to perform a bounds check for @param pos, to avoid out of bounds access on @param signatures

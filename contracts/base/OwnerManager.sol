@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: LGPL-3.0-only
-pragma solidity >=0.7.0 <0.9.0;
+pragma solidity >=0.8.0 <0.9.0;
 import "../common/SelfAuthorized.sol";
 
 /// @title OwnerManager - Manages a set of owners and a threshold to perform actions.
 /// @author Stefan George - <stefan@gnosis.pm>
-/// @author Richard Meissner - <richard@gnosis.pm>
+/// @author Modified from Gnosis Safe.
 contract OwnerManager is SelfAuthorized {
     event AddedOwner(address owner);
     event RemovedOwner(address owner);

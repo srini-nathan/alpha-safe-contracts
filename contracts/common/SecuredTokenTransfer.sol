@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: LGPL-3.0-only
-pragma solidity >=0.7.0 <0.9.0;
+pragma solidity >=0.8.0 <0.9.0;
 
 /// @title SecuredTokenTransfer - Secure token transfer
-/// @author Richard Meissner - <richard@gnosis.pm>
+/// @author Modified from Gnosis Safe.
 contract SecuredTokenTransfer {
     /// @dev Transfers a token and returns if it was a success
     /// @param token Token that should be transferred

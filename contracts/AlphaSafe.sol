@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: LGPL-3.0-only
-pragma solidity >=0.7.0 <0.9.0;
+pragma solidity >=0.8.0 <0.9.0;
 
 import "./common/EtherPaymentFallback.sol";
 import "./common/Enum.sol";
@@ -7,7 +7,6 @@ import "./base/OwnerManager.sol";
 import "./base/FallbackManager.sol";
 import "./common/SecuredTokenTransfer.sol";
 import "./common/SignatureDecoder.sol";
-import "./external/GnosisSafeMath.sol";
 import "./interfaces/ISignatureValidator.sol";
 import "./common/Singleton.sol";
 import "./base/Executor.sol";
@@ -30,8 +29,6 @@ contract AlphaSafe is
     Executor,
     AlphaLendAndBorrow
 {
-    using GnosisSafeMath for uint256;
-
     string public constant VERSION = "0.0.1"; // BETA version.
 
     // keccak256(
@@ -130,7 +127,7 @@ contract AlphaSafe is
         // We require some gas to emit the events (at least 2500) after the execution and some to perform code until the execution (500)
         // We also include the 1/64 in the check that is not send along with a call to counteract potential shortings because of EIP-150
         require(
-            gasleft() >= ((safeTxGas * 64) / 63).max(safeTxGas + 2500) + 500,
+            gasleft() >= max(((safeTxGas * 64) / 63), (safeTxGas + 2500)) + 500,
             "GS010"
         );
         {
@@ -144,7 +141,7 @@ contract AlphaSafe is
                 operation,
                 gasPrice == 0 ? (gasleft() - 2500) : safeTxGas
             );
-            gasUsed = gasUsed.sub(gasleft());
+            gasUsed = gasUsed - gasleft();
             // If no safeTxGas and no gasPrice was set (e.g. both are 0), then the internal tx is required to be successful
             // This makes it possible to use `estimateGas` without issues, as it searches for the minimum gas where the tx doesn't revert
             require(success || safeTxGas != 0 || gasPrice != 0, "GS013");
@@ -177,12 +174,13 @@ contract AlphaSafe is
             : refundReceiver;
         if (gasToken == address(0)) {
             // For ETH we will only adjust the gas price to not be higher than the actual used gas price.
-            payment = gasUsed.add(baseGas).mul(
-                gasPrice < tx.gasprice ? gasPrice : tx.gasprice
-            );
+            payment =
+                gasUsed +
+                (baseGas) *
+                (gasPrice < tx.gasprice ? gasPrice : tx.gasprice);
             require(receiver.send(payment), "GS011");
         } else {
-            payment = gasUsed.add(baseGas).mul(gasPrice);
+            payment = gasUsed + baseGas * gasPrice;
             require(transferToken(gasToken, receiver, payment), "GS012");
         }
     }
@@ -219,7 +217,7 @@ contract AlphaSafe is
         uint256 requiredSignatures
     ) public view {
         // Check that the provided signature data is not too short
-        require(signatures.length >= requiredSignatures.mul(65), "GS020");
+        require(signatures.length >= requiredSignatures * 65, "GS020");
         // There cannot be an owner with address 0.
         address lastOwner = address(0);
         address currentOwner;
@@ -237,10 +235,10 @@ contract AlphaSafe is
                 // Check that signature data pointer (s) is not pointing inside the static part of the signatures bytes
                 // This check is not completely accurate, since it is possible that more signatures than the threshold are send.
                 // Here we only check that the pointer is not pointing inside the part that is being processed
-                require(uint256(s) >= requiredSignatures.mul(65), "GS021");
+                require(uint256(s) >= requiredSignatures * 65, "GS021");
 
                 // Check that signature data pointer (s) is in bounds (points to the length of data -> 32 bytes)
-                require(uint256(s).add(32) <= signatures.length, "GS022");
+                require(uint256(s) + 32 <= signatures.length, "GS022");
 
                 // Check if the contract signature is in bounds: start of data is s + 32 and end is start + signature length
                 uint256 contractSignatureLen;
@@ -249,8 +247,7 @@ contract AlphaSafe is
                     contractSignatureLen := mload(add(add(signatures, s), 0x20))
                 }
                 require(
-                    uint256(s).add(32).add(contractSignatureLen) <=
-                        signatures.length,
+                    uint256(s) + 32 + contractSignatureLen <= signatures.length,
                     "GS023"
                 );
 
@@ -380,5 +377,12 @@ contract AlphaSafe is
                 domainSeparator(),
                 safeTxHash
             );
+    }
+
+    /**
+     *@dev Returns the largest of two numbers.
+     */
+    function max(uint256 a, uint256 b) internal pure returns (uint256) {
+        return a >= b ? a : b;
     }
 }
