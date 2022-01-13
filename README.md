@@ -1,4 +1,4 @@
-# alpha-safe-contracts# Alpha Safe Contracts 
+# Alpha Safe Contracts 
 
 ## Installing dependencies:
 ```bash 
