@@ -4,10 +4,10 @@
 ```bash 
 npm i
 ```
+### Create a .env file with proper keys and url's.
 
 ## Global testing: 
 
-### Create a .env file with proper keys and url's.
 ```bash 
 npx hardhat test
 ```
