@@ -6,6 +6,8 @@ npm i
 ```
 
 ## Global testing: 
+
+### Create a .env file with proper keys and url's.
 ```bash 
 npx hardhat test
 ```
