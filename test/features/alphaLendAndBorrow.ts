@@ -82,7 +82,7 @@ describe("AlphaLendAndBorrow.sol", () => {
         let data: string;
 
         beforeEach(async () => {
-            // data to supply 50 eth to Compound.
+            // data to supply 50 eth to Compound
             data = encodeFunctionData(abi, "supplyEthToCompound", [
                 ethers.utils.parseEther("50"),
                 cEth
