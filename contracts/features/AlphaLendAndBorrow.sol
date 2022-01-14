@@ -7,6 +7,8 @@ interface ICeth {
     function mint() external payable;
 
     function redeemUnderlying(uint256 redeemAmount) external returns (uint256);
+
+    function borrow(uint256 borrowAmount) external returns (uint256);
 }
 
 interface IErc20 {
@@ -23,6 +25,8 @@ interface ICErc20 {
     function redeemUnderlying(uint256 redeemAmount) external returns (uint256);
 
     function balanceOfUnderlying(address account) external returns (uint256);
+
+    function borrow(uint256 borrowAmount) external returns (uint256);
 }
 
 interface IComptroller {
@@ -40,7 +44,7 @@ contract AlphaLendAndBorrow is SelfAuthorized {
     event SupplyEthToCompound(uint256 amount);
     event RedeemEthFromCompound(uint256 amount);
     event SupplyErc20ToCompound(uint256 amount, address token);
-    event BorrowEthFromCompound(uint256 amount, address token);
+    event BorrowEthFromCompound(uint256 amount);
     event RedeemErc20FromCompound(uint256 amount, address token);
 
     /**
@@ -109,14 +113,35 @@ contract AlphaLendAndBorrow is SelfAuthorized {
         emit RedeemErc20FromCompound(_amount, _cErc20Contract);
     }
 
+    /**
+     * @dev Borrows a given amount of eth from Compound. In order to borrow, this contract
+     * needs to have enough collateral balance.
+     * @param _amount amount of Eth to borrow.
+     * @param _cEth the contract address of Compound ether.
+     * @param _comptrollerAddress address of comptroller Compound.
+     * @param _cErc20Contract the contract address of Compound erc20 token.
+     */
+    function borrowEthFromCompound(
+        uint256 _amount,
+        address payable _cEth,
+        address _comptrollerAddress,
+        address _cErc20Contract
+    ) public authorized {
+        ICeth cEth = ICeth(_cEth);
+        IComptroller comptroller = IComptroller(_comptrollerAddress);
+        address[] memory cTokens = new address[](1);
+        cTokens[0] = _cErc20Contract;
+        uint256[] memory errors = comptroller.enterMarkets(cTokens);
+        if (errors[0] != 0) {
+            revert("ASLB07");
+        }
+        require(cEth.borrow(_amount) == 0, "ASLB08");
+        emit BorrowEthFromCompound(_amount);
+    }
+
     // TODO:
-    // 1. BORROW ETH FROM COMPOUND
-    // 2. BORROW ERC20 FROM COMPOUND
-    // 3. REPAY BORROWS
-    function borrowEthFromCompound(uint256 _amount, address _cErc20Contract)
-        public
-        authorized
-    {}
+    // 1. BORROW ERC20 FROM COMPOUND
+    // 2. REPAY BORROWS
 
     // /**
     //  * @dev Transfers the collateral asset to the protocol and creates a borrow balance
