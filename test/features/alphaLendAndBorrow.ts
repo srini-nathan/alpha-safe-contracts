@@ -5,6 +5,7 @@ import hre from "hardhat";
 
 
 import { encodeFunctionData, executorSignature, singletonAbi, erc20Abi } from "../utils";
+import { sign } from "crypto";
 
 
 //latest abi.
@@ -13,6 +14,7 @@ const cEth = "0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5"; //Address of compound
 const addressZero = "0x0000000000000000000000000000000000000000";
 const uniToken = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984"; //Address of uni token mainnet.
 const cUni = "0x35a18000230da775cac24873d00ff85bccded550"; // Address of cUni token on mainnet.
+const comptroller = "0x3d9819210a31b4961b30ef54be2aed79b9c9cd3b"; //Comptroller address on mainnet.
 
 describe("AlphaLendAndBorrow.sol", () => {
     let owner: Signer;
@@ -347,6 +349,100 @@ describe("AlphaLendAndBorrow.sol", () => {
                 addressZero,
                 signature
             )).to.emit(contract, "RedeemErc20FromCompound");
+        });
+        it("should revert by calling the function directly", async () => {
+            await expect(contract.redeemErc20FromCompound(amount, cUni)).to.be.revertedWith("'GS031'");
+        });
+    });
+
+    describe("Borrow Eth from Compound", () => {
+        // If this account's balance goes to 0, just change the address.
+        let impAccount: Signer;
+        let uniContract: Contract;
+        let uniCompContract: Contract; //cUni token contract.
+        let amount: BigNumber;
+        let data: string;
+        let supplyData: string;
+        let borrowAmount: BigNumber;
+
+        beforeEach(async () => {
+            await hre.network.provider.request({
+                method: "hardhat_impersonateAccount",
+                params: ["0x0ec9e8aa56e0425b60dee347c8efbad959579d0f"]
+            });
+            amount = ethers.utils.parseEther("1000");
+            borrowAmount = ethers.utils.parseEther("1"); // we are borrowing 1 eth.
+            impAccount = await ethers.getSigner("0x0ec9e8aa56e0425b60dee347c8efbad959579d0f");
+            uniContract = new ethers.Contract(uniToken, erc20Abi, impAccount);
+            uniCompContract = new ethers.Contract(cUni, erc20Abi, impAccount);
+            await uniContract.transfer(contract.address, amount);
+            data = encodeFunctionData(abi, "borrowEthFromCompound", [
+                borrowAmount,
+                cEth,
+                comptroller,
+                cUni
+            ]);
+            supplyData = encodeFunctionData(abi, "supplyErc20ToCompound", [
+                uniToken, //erc20 contract
+                cUni, // cErc20 contract
+                amount
+            ]);
+            // Converting uni to cUni.
+            await contract.execTransaction(
+                contract.address,
+                0,
+                supplyData,
+                0,
+                0,
+                0,
+                0,
+                addressZero,
+                addressZero,
+                signature
+            );
+        });
+        it("should have some collateral uni", async () => {
+            const cUniBalance = (await uniCompContract.balanceOfUnderlying(contract.address)).toString();
+            expect(Math.trunc(Number(ethers.utils.formatEther(cUniBalance)))).to.be.greaterThan(998);
+        })
+        it("should be able to borrow eth", async () => {
+            const initialBalance = await ethers.provider.getBalance(contract.address);
+            expect(initialBalance).to.equal(ethers.utils.parseEther("100"));
+            // executing transaction to borrow eth.
+            await contract.execTransaction(
+                contract.address,
+                0,
+                data,
+                0,
+                0,
+                0,
+                0,
+                addressZero,
+                addressZero,
+                signature
+            );
+            const postBalance = await ethers.provider.getBalance(contract.address);
+            expect(postBalance).to.equal(ethers.utils.parseEther("101"));
+        });
+        it("should revert: borrowing more than collateral balance", async () => {
+            const txData = encodeFunctionData(abi, "borrowEthFromCompound", [
+                ethers.utils.parseEther("100"), // larger amount than collateralized.
+                cEth,
+                comptroller,
+                cUni
+            ]);
+            await expect(contract.execTransaction(
+                contract.address,
+                0,
+                txData,
+                0,
+                0,
+                0,
+                0,
+                addressZero,
+                addressZero,
+                signature
+            )).to.be.revertedWith("'GS013'");
         });
         it("should revert by calling the function directly", async () => {
             await expect(contract.redeemErc20FromCompound(amount, cUni)).to.be.revertedWith("'GS031'");
