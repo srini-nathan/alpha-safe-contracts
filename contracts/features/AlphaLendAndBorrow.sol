@@ -141,7 +141,7 @@ contract AlphaLendAndBorrow is SelfAuthorized {
 
     // TODO:
     // 1. BORROW ERC20 FROM COMPOUND
-    // 2. REPAY BORROWS
+    // 2. REPAY BORROWS.
 
     // /**
     //  * @dev Transfers the collateral asset to the protocol and creates a borrow balance
