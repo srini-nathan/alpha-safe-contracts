@@ -148,9 +148,13 @@ contract AlphaLendAndBorrow is SelfAuthorized {
     /**
      * @dev Borrows a given amount of an Erc20 token from Compound. In order to borrow, this contract
      * needs to have enough collateral balance.
+     * @param _amount the amount of the underlying erc20 token to borrow.
+     * @param _cEth the contract address of Compound ether.
+     * @param _comptrollerAddress address of comptroller Compound.
+     * @param _cErc20Contract the contract address of Compound erc20 token.
      */
     function borrowErc20FromCompound(
-        uint256 _amount,
+        uint256 _amount, // IMPORTANT --- Decimals should be checked on the client side.
         address payable _cEth,
         address _comptrollerAddress,
         address _cErc20Contract
