@@ -59,7 +59,7 @@ describe("AlphaLendAndBorrow.sol", () => {
 
     describe("Correct setup", () => {
         it("should have a threshold of 1", async () => {
-            let _threshold = await contract.getThreshold();
+            const _threshold = await contract.getThreshold();
             expect(_threshold.toString()).to.equal("1");
         });
         it("should have a balance of 100 ether", async () => {
@@ -71,9 +71,9 @@ describe("AlphaLendAndBorrow.sol", () => {
             expect(chainId).to.equal("1");
         });
         it("should have the owner as owner", async () => {
-            let arrayOfOwners = await contract.getOwners();
+            const arrayOfOwners = await contract.getOwners();
             expect(arrayOfOwners.length).to.equal(1);
-            let result = await contract.isOwner(ownerAddress);
+            const result = await contract.isOwner(ownerAddress);
             expect(result).to.equal(true);
         });
     });
@@ -321,8 +321,8 @@ describe("AlphaLendAndBorrow.sol", () => {
         it("should be able to redeem cUni back to uni", async () => {
             let uniBalance = await uniContract.balanceOf(contract.address);
             let cBalance = await uniCompContract.balanceOfUnderlying(contract.address);
-            expect(Math.trunc(Number(ethers.utils.formatEther(cBalance)))).to.be.greaterThan(998);
             expect(uniBalance).to.equal(0);
+            expect(Math.trunc(Number(ethers.utils.formatEther(cBalance)))).to.be.greaterThan(998);
             await contract.execTransaction(
                 contract.address,
                 0,
@@ -538,4 +538,213 @@ describe("AlphaLendAndBorrow.sol", () => {
             await expect(contract.borrowErc20FromCompound(100, cEth, comptroller, cUni)).to.be.revertedWith("'GS031'");
         });
     });
-}); 
+
+    describe("Repay Eth to Compound", () => {
+        let data: string;
+        let borrowData: string;
+        let supplyData: string;
+        let repayAmount: BigNumber;
+        let borrowAmount: BigNumber;
+        let supplyAmount: BigNumber;
+
+        beforeEach(async () => {
+            repayAmount = ethers.utils.parseEther("5");
+            borrowAmount = ethers.utils.parseEther("10");
+            supplyAmount = ethers.utils.parseEther("50");
+            data = encodeFunctionData(abi, "repayEthToCompound", [
+                repayAmount,
+                cEth
+            ]);
+            borrowData = encodeFunctionData(abi, "borrowEthFromCompound", [
+                borrowAmount,
+                cEth,
+                comptroller,
+            ]);
+            supplyData = encodeFunctionData(abi, "supplyEthToCompound", [
+                supplyAmount,
+                cEth
+            ]);
+            // supplying 50 eth 
+            await contract.execTransaction(
+                contract.address,
+                0,
+                supplyData,
+                0,
+                0,
+                0,
+                0,
+                addressZero,
+                addressZero,
+                signature
+            );
+            // borrowing 10 eth
+            await contract.execTransaction(
+                contract.address,
+                0,
+                borrowData,
+                0,
+                0,
+                0,
+                0,
+                addressZero,
+                addressZero,
+                signature
+            );
+        });
+        it("should have a borrowed balance", async () => {
+            const borrowedBalance = await cEthContract.borrowBalanceCurrent(contract.address);
+            expect(Math.trunc(Number(ethers.utils.formatEther(borrowedBalance)))).to.be.greaterThan(9);
+        });
+        it("should be able to repay borrowed eth", async () => {
+            const initBalance = await cEthContract.borrowBalanceCurrent(contract.address);
+            expect(Math.trunc(Number(ethers.utils.formatEther(initBalance)))).to.be.greaterThan(9);
+            // Repaying 5 eth
+            await contract.execTransaction(
+                contract.address,
+                0,
+                data,
+                0,
+                0,
+                0,
+                0,
+                addressZero,
+                addressZero,
+                signature
+            );
+            const postBalance = await cEthContract.borrowBalanceCurrent(contract.address);
+            expect(Math.trunc(Number(ethers.utils.formatEther(postBalance)))).to.be.lessThan(6);
+        });
+        it("should revert: repaying more than debt", async () => {
+            const txData = encodeFunctionData(abi, "repayEthToCompound", [
+                ethers.utils.parseEther("40"),
+                cEth,
+            ]);
+            await expect(contract.execTransaction(
+                contract.address,
+                0,
+                txData,
+                0,
+                0,
+                0,
+                0,
+                addressZero,
+                addressZero,
+                signature
+            )).to.be.revertedWith("'GS013'");
+        });
+        it("should revert by calling the function directly", async () => {
+            await expect(contract.repayEthToCompound(100, cEth)).to.be.revertedWith("'GS031'");
+        });
+    });
+
+    describe("Repay Erc20 (uni) to Compound", () => {
+        let data: string;
+        let borrowData: string;
+        let supplyData: string;
+        let repayAmount: BigNumber;
+        let borrowAmount: BigNumber;
+        let supplyAmount: BigNumber;
+        let uniCompContract: Contract;
+        let uniContract: Contract;
+
+        beforeEach(async () => {
+            repayAmount = ethers.utils.parseEther("500"); // 500 uni
+            borrowAmount = ethers.utils.parseEther("1000"); // 1000 uni
+            supplyAmount = ethers.utils.parseEther("50"); // 50 ETH
+            supplyData = encodeFunctionData(abi, "supplyEthToCompound", [
+                supplyAmount,
+                cEth
+            ]);
+            borrowData = encodeFunctionData(abi, "borrowErc20FromCompound", [
+                borrowAmount,
+                cEth,
+                comptroller,
+                cUni
+            ]);
+            data = encodeFunctionData(abi, "repayErc20ToCompound", [
+                repayAmount,
+                uniToken,
+                cUni
+            ]);
+            uniCompContract = new ethers.Contract(cUni, erc20Abi, owner);
+            uniContract = new ethers.Contract(uniToken, erc20Abi, owner);
+            // supplying 50 eth
+            await contract.execTransaction(
+                contract.address,
+                0,
+                supplyData,
+                0,
+                0,
+                0,
+                0,
+                addressZero,
+                addressZero,
+                signature
+            );
+            // borrowing 1000 uni
+            await contract.execTransaction(
+                contract.address,
+                0,
+                borrowData,
+                0,
+                0,
+                0,
+                0,
+                addressZero,
+                addressZero,
+                signature
+            );
+
+        });
+        it("should have UNI borrowed balance", async () => {
+            const borrowedBalance = await uniCompContract.borrowBalanceCurrent(contract.address);
+            expect(Math.trunc(Number(ethers.utils.formatEther(borrowedBalance)))).to.be.greaterThan(998); // we have 1000 uni borrowed.
+            // we can check with exact precision by just calling uni contract directly.
+            const uniBalance = await uniContract.balanceOf(contract.address);
+            expect(uniBalance).to.equal(borrowAmount);
+        });
+        it("should be able to repay borrowed UNI", async () => {
+            const initBalance = await uniCompContract.borrowBalanceCurrent(contract.address);
+            expect(Math.trunc(Number(ethers.utils.formatEther(initBalance)))).to.be.greaterThan(998);
+            // repaying 500 uni. 
+            await contract.execTransaction(
+                contract.address,
+                0,
+                data,
+                0,
+                0,
+                0,
+                0,
+                addressZero,
+                addressZero,
+                signature
+            );
+            const postBalance = await uniCompContract.borrowBalanceCurrent(contract.address);
+            expect(Math.trunc(Number(ethers.utils.formatEther(postBalance)))).to.be.lessThan(501);
+        });
+        it("should revert: repaying more than actual balance", async () => {
+            const txData = encodeFunctionData(abi, "repayErc20ToCompound", [
+                ethers.utils.parseEther("400"),
+                uniToken,
+                cEth,
+            ]);
+            await expect(contract.execTransaction(
+                contract.address,
+                0,
+                txData,
+                0,
+                0,
+                0,
+                0,
+                addressZero,
+                addressZero,
+                signature
+            )).to.be.revertedWith("'GS013'");
+        });
+        it("should revert by calling the function directly", async () => {
+            await expect(contract.repayErc20ToCompound(100, uniToken, cUni)).to.be.revertedWith("'GS031'");
+        });
+    });
+});
+
+
