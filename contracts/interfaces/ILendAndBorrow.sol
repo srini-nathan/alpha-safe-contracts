@@ -12,4 +12,9 @@ interface ILendAndBorrow {
         external
         view
         returns (uint256);
+
+    function borrowBalanceCurrent(address account)
+        external
+        view
+        returns (uint256);
 }
