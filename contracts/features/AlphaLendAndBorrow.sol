@@ -46,6 +46,7 @@ contract AlphaLendAndBorrow is SelfAuthorized {
     event SupplyErc20ToCompound(uint256 amount, address token);
     event BorrowEthFromCompound(uint256 amount);
     event RedeemErc20FromCompound(uint256 amount, address token);
+    event BorrowErc20FromCompound(uint256 amount, address token);
 
     /**
      * @dev Supplies Eth to compound and gets cEth (compound Eth) in return.
@@ -57,7 +58,8 @@ contract AlphaLendAndBorrow is SelfAuthorized {
         public
         authorized
     {
-        require(address(this).balance >= _amount, "ASLB01");
+        // We avoid require statements to minimize bytecode. If the address is
+        // incorrect or the amount is 0, the transaction will revert.
         ICeth cEth = ICeth(_cEth);
         cEth.mint{value: _amount}();
         emit SupplyEthToCompound(_amount);
@@ -73,7 +75,7 @@ contract AlphaLendAndBorrow is SelfAuthorized {
         authorized
     {
         ICeth cEth = ICeth(_cEth);
-        require(cEth.redeemUnderlying(_amount) == 0, "ASLB02");
+        require(cEth.redeemUnderlying(_amount) == 0, "ASLB03");
         emit RedeemEthFromCompound(_amount);
     }
 
@@ -87,11 +89,18 @@ contract AlphaLendAndBorrow is SelfAuthorized {
     function supplyErc20ToCompound(
         address _erc20Contract,
         address _cErc20Contract,
+        address _comptrollerAddress,
         uint256 _amount
     ) public authorized {
+        IComptroller comptroller = IComptroller(_comptrollerAddress);
+        address[] memory cTokens = new address[](1);
+        cTokens[0] = _cErc20Contract;
         IErc20 token = IErc20(_erc20Contract);
         ICErc20 cToken = ICErc20(_cErc20Contract);
-        require(token.balanceOf(address(this)) >= _amount, "ASLB03");
+        uint256[] memory errors = comptroller.enterMarkets(cTokens);
+        if (errors[0] != 0) {
+            revert("ASLB07");
+        }
         // Approve exact amount.
         require(token.approve(_cErc20Contract, _amount) == true, "ASLBO4");
         require(cToken.mint(_amount) == 0, "ASLB05");
@@ -108,8 +117,7 @@ contract AlphaLendAndBorrow is SelfAuthorized {
         authorized
     {
         ICErc20 cToken = ICErc20(_cErc20Contract);
-        require(cToken.balanceOfUnderlying(address(this)) >= _amount, "ASLB05");
-        require(cToken.redeemUnderlying(_amount) == 0, "ASLB06");
+        require(cToken.redeemUnderlying(_amount) == 0, "ASLB07");
         emit RedeemErc20FromCompound(_amount, _cErc20Contract);
     }
 
@@ -119,54 +127,47 @@ contract AlphaLendAndBorrow is SelfAuthorized {
      * @param _amount amount of Eth to borrow.
      * @param _cEth the contract address of Compound ether.
      * @param _comptrollerAddress address of comptroller Compound.
-     * @param _cErc20Contract the contract address of Compound erc20 token.
      */
     function borrowEthFromCompound(
+        uint256 _amount,
+        address payable _cEth,
+        address _comptrollerAddress
+    ) public authorized {
+        ICeth cEth = ICeth(_cEth);
+        IComptroller comptroller = IComptroller(_comptrollerAddress);
+        address[] memory cTokens = new address[](1);
+        cTokens[0] = _cEth;
+        uint256[] memory errors = comptroller.enterMarkets(cTokens);
+        if (errors[0] != 0) {
+            revert("ASLB07");
+        }
+        require(cEth.borrow(_amount) == 0, "ASLB09");
+        emit BorrowEthFromCompound(_amount);
+    }
+
+    /**
+     * @dev Borrows a given amount of an Erc20 token from Compound. In order to borrow, this contract
+     * needs to have enough collateral balance.
+     */
+    function borrowErc20FromCompound(
         uint256 _amount,
         address payable _cEth,
         address _comptrollerAddress,
         address _cErc20Contract
     ) public authorized {
-        ICeth cEth = ICeth(_cEth);
+        ICErc20 cToken = ICErc20(_cErc20Contract);
         IComptroller comptroller = IComptroller(_comptrollerAddress);
-        address[] memory cTokens = new address[](1);
+        address[] memory cTokens = new address[](2);
         cTokens[0] = _cErc20Contract;
+        cTokens[1] = _cEth;
         uint256[] memory errors = comptroller.enterMarkets(cTokens);
         if (errors[0] != 0) {
-            revert("ASLB07");
+            revert("ASLB010");
         }
-        require(cEth.borrow(_amount) == 0, "ASLB08");
-        emit BorrowEthFromCompound(_amount);
+        require(cToken.borrow(_amount) == 0, "ASLB11");
+        emit BorrowErc20FromCompound(_amount, _cErc20Contract);
     }
 
     // TODO:
-    // 1. BORROW ERC20 FROM COMPOUND
-    // 2. REPAY BORROWS.
-
-    // /**
-    //  * @dev Transfers the collateral asset to the protocol and creates a borrow balance
-    //  * that begins accumulating interests based on the borrow rate. The amount borrowed must
-    //  * be less than the user's Accound Liquidity and the market's available liquidity.
-    //  */
-    // function borrowErc20FromCompound(
-    //     address payable _cEth,
-    //     address _comptrollerAddress,
-    //     address _erc20Contract,
-    //     address _cErc20Contract,
-    //     uint256 _borrowAmount
-    // ) public authorized {
-    //     ICeth cEth = ICeth(_cEth);
-    //     IComptroller comptroller = IComptroller(_comptrollerAddress);
-    //     ICErc20 cToken = ICErc20(_cErc20Contract);
-    //     IErc20 token = IErc20(_erc20Contract);
-    //     // Approve exact amount.
-    //     require(token.approve(_cErc20Contract, _amount) == true, "ASLB05");
-    //     address[] memory cTokens = new address[](2);
-    //     cTokens[0] = _cEth;
-    //     cTokens[1] = "";
-    //     uint256[] memory errors = comptroller.enterMarkets(cTokens);
-    //     if (errors[0] != 0) {
-    //         revert("ASLB05");
-    //     }
-    // }
+    // 1. REPAY BORROWS
 }
