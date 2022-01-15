@@ -9,6 +9,8 @@ interface ICeth {
     function redeemUnderlying(uint256 redeemAmount) external returns (uint256);
 
     function borrow(uint256 borrowAmount) external returns (uint256);
+
+    function repayBorrow() external payable;
 }
 
 interface IErc20 {
@@ -27,6 +29,8 @@ interface ICErc20 {
     function balanceOfUnderlying(address account) external returns (uint256);
 
     function borrow(uint256 borrowAmount) external returns (uint256);
+
+    function repayBorrow(uint256 repayAmount) external returns (uint256);
 }
 
 interface IComptroller {
@@ -54,7 +58,7 @@ contract AlphaLendAndBorrow is SelfAuthorized {
      * @param _amount the amount in WEI to supply.
      * @param _cEth the contract address of Compound ether.
      */
-    function supplyEthToCompound(uint256 _amount, address payable _cEth)
+    function supplyEthToCompound(uint256 _amount, address _cEth)
         public
         authorized
     {
@@ -130,7 +134,7 @@ contract AlphaLendAndBorrow is SelfAuthorized {
      */
     function borrowEthFromCompound(
         uint256 _amount,
-        address payable _cEth,
+        address _cEth,
         address _comptrollerAddress
     ) public authorized {
         ICeth cEth = ICeth(_cEth);
@@ -155,7 +159,7 @@ contract AlphaLendAndBorrow is SelfAuthorized {
      */
     function borrowErc20FromCompound(
         uint256 _amount, // IMPORTANT --- Decimals should be checked on the client side.
-        address payable _cEth,
+        address _cEth,
         address _comptrollerAddress,
         address _cErc20Contract
     ) public authorized {
@@ -172,6 +176,39 @@ contract AlphaLendAndBorrow is SelfAuthorized {
         emit BorrowErc20FromCompound(_amount, _cErc20Contract);
     }
 
-    // TODO:
-    // 1. REPAY BORROWS
+    /**
+     * @dev Repays borrowed Eth to Compound.
+     * @param _amount the amount to repay, there needs to be enough balance, if not
+     * it will revert.
+     * @param _cEth the contract address of Compound ether.
+     */
+    function repayEthToCompound(uint256 _amount, address _cEth)
+        public
+        authorized
+    {
+        ICeth cEth = ICeth(_cEth);
+        cEth.repayBorrow{value: _amount}();
+    }
+
+    /**
+     * @dev Repays borrowed Erc20 to compound.
+     * @param _amount the amount to repay, there needs to be enough balance, if not
+     * it will revert.
+     * @param _erc20Contract the contract address of the erc20 token.
+     * @param _cErc20Contract the contract address of Compound erc20 token.
+     */
+    function repayErc20ToCompound(
+        uint256 _amount,
+        address _erc20Contract,
+        address _cErc20Contract
+    ) public authorized {
+        IErc20 token = IErc20(_erc20Contract);
+        ICErc20 cToken = ICErc20(_cErc20Contract);
+        require(token.approve(_cErc20Contract, _amount) == true, "ASLB04");
+        uint256 error = cToken.repayBorrow(_amount);
+        require(error == 0, "ASLB08");
+    }
 }
+
+// TODO:
+// Check error codes and document them.
