@@ -37,6 +37,9 @@ module.exports = {
         url: ALCHEMY_URL
       }
     }
+  },
+  mocha: {
+    timeout: 40000
   }
 };
 
