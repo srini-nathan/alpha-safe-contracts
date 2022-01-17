@@ -11,6 +11,7 @@ import "./interfaces/ISignatureValidator.sol";
 import "./common/Singleton.sol";
 import "./base/Executor.sol";
 import "./features/AlphaLendAndBorrow.sol";
+import "./features/AlphaSwap.sol";
 
 /**
  * @notice PHASE - BETA - Modified version of Gnosis Safe to implement taylor-made features.
@@ -27,7 +28,8 @@ contract AlphaSafe is
     FallbackManager,
     Enum,
     Executor,
-    AlphaLendAndBorrow
+    AlphaLendAndBorrow,
+    AlphaSwap
 {
     string public constant VERSION = "0.0.1"; // BETA version.
 
@@ -317,7 +319,6 @@ contract AlphaSafe is
     /// @dev Returns the chain id used by this contract.
     function getChainId() public view returns (uint256) {
         uint256 id;
-        // solhint-disable-next-line no-inline-assembly
         assembly {
             id := chainid()
         }
