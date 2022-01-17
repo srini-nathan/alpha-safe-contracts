@@ -51,6 +51,8 @@ contract AlphaLendAndBorrow is SelfAuthorized {
     event BorrowEthFromCompound(uint256 amount);
     event RedeemErc20FromCompound(uint256 amount, address token);
     event BorrowErc20FromCompound(uint256 amount, address token);
+    event RepayEthToCompound(uint256 amount);
+    event RepayErc20ToCompound(uint256, address token);
 
     /**
      * @dev Supplies Eth to compound and gets cEth (compound Eth) in return.
@@ -188,6 +190,7 @@ contract AlphaLendAndBorrow is SelfAuthorized {
     {
         ICeth cEth = ICeth(_cEth);
         cEth.repayBorrow{value: _amount}();
+        emit RepayEthToCompound(_amount);
     }
 
     /**
@@ -207,6 +210,7 @@ contract AlphaLendAndBorrow is SelfAuthorized {
         require(token.approve(_cErc20Contract, _amount) == true, "ASLB04");
         uint256 error = cToken.repayBorrow(_amount);
         require(error == 0, "ASLB08");
+        emit RepayErc20ToCompound(_amount, _erc20Contract);
     }
 }
 
