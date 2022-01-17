@@ -1,4 +1,4 @@
-import { ethers } from "ethers";
+import { ethers, BigNumber } from "ethers";
 
 export const encodeFunctionData = (abi: any, functionName: string, ..._params: any[]): string => {
     const params = _params[0]; //Eliminating one array layer.
@@ -16,8 +16,37 @@ export const executorSignature = (_address: string): string => {
     return signature;
 }
 
+interface SafeTx {
+    to: string,
+    value: BigNumber | number | string,
+    data: string,
+    operation: number,
+    safeTxGas: number | string,
+    baseGas: number | string,
+    gasPrice: number | string,
+    gasToken: string,
+    refundReceiver: string,
+    nonce: number | string
+}
+
+export const safeTx = (_to: string, _value: BigNumber | number | string, _data: string, _operation: number, _safeTxGas: number | string,
+    _baseGas: number | string, _gasPrice: number | string, _gasToken: string, _refundReceiver: string, _nonce: number | string): SafeTx => {
+
+    return {
+        to: _to,
+        value: _value,
+        data: _data,
+        operation: _operation,
+        safeTxGas: _safeTxGas,
+        baseGas: _baseGas,
+        gasPrice: _gasPrice,
+        gasToken: _gasToken,
+        refundReceiver: _refundReceiver,
+        nonce: _nonce
+    };
+}
+
 export const singletonAbi = ["function setup(address[] calldata _owners,uint256 _threshold)"];
 export const erc20Abi = ["function approve(address spender, uint rawAmount) external returns (bool)", "function balanceOf(address account) external view returns (uint)", "function transfer(address dst, uint rawAmount) external returns (bool)", "function balanceOfUnderlying(address account) external view returns (uint)", "function borrowBalanceCurrent(address account) external view returns (uint256)"];
 
 export const VERSION = "0.0.1"; // Beta version.
-
