@@ -3,7 +3,7 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import "../common/SelfAuthorized.sol";
 
-/// @title Fallback Manager - A contract that manages fallback calls made to this contract
+/// @title Fallback Manager - A contract that manages fallback calls made to this contract.
 /// @author Modified from gnosis safe.
 contract FallbackManager is SelfAuthorized {
     event ChangedFallbackHandler(address handler);
