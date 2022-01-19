@@ -10,6 +10,7 @@ import { encodeFunctionData, executorSignature, singletonAbi, erc20Abi, safeTx }
 
 //latest abi.
 const { abi } = require("../../artifacts/contracts/AlphaSafe.sol/AlphaSafe.json");
+
 const cEth = "0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5"; //Address of compound eth on mainnet.
 const addressZero = "0x0000000000000000000000000000000000000000";
 const uniToken = "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984"; //Address of uni token mainnet.
@@ -99,7 +100,7 @@ describe("AlphaLendAndBorrow.sol", () => {
             const tx = safeTx(contract.address, 0, data, 0, 0, 0, 0, addressZero, addressZero, signature);
             await contract.execTransaction(
                 tx.to, tx.value, tx.data, tx.operation, tx.safeTxGas, tx.baseGas, tx.gasPrice, tx.gasToken,
-                tx.refundReceiver, tx.nonce
+                tx.refundReceiver, tx.signature
             );
             const balance = (await cEthContract.balanceOfUnderlying(contract.address)).toString();
             expect((balance / 1e18)).to.be.greaterThan(49.98); //gas.
@@ -112,7 +113,7 @@ describe("AlphaLendAndBorrow.sol", () => {
             const tx = safeTx(contract.address, 0, txFailure, 0, 0, 0, 0, addressZero, addressZero, signature);
             await expect(contract.execTransaction(
                 tx.to, tx.value, tx.data, tx.operation, tx.safeTxGas, tx.baseGas, tx.gasPrice, tx.gasToken,
-                tx.refundReceiver, tx.nonce
+                tx.refundReceiver, tx.signature
             )).to.be.reverted;
         });
         it("should revert by calling the function directly", async () => {
@@ -122,7 +123,7 @@ describe("AlphaLendAndBorrow.sol", () => {
             const tx = safeTx(contract.address, 0, data, 0, 0, 0, 0, addressZero, addressZero, signature);
             await expect(contract.execTransaction(
                 tx.to, tx.value, tx.data, tx.operation, tx.safeTxGas, tx.baseGas, tx.gasPrice, tx.gasToken,
-                tx.refundReceiver, tx.nonce
+                tx.refundReceiver, tx.signature
             )).to.emit(contract, "SupplyEthToCompound").withArgs(supplyAmount);
         });
     });
@@ -148,7 +149,7 @@ describe("AlphaLendAndBorrow.sol", () => {
             const tx = safeTx(contract.address, 0, data, 0, 0, 0, 0, addressZero, addressZero, signature);
             await contract.execTransaction(
                 tx.to, tx.value, tx.data, tx.operation, tx.safeTxGas, tx.baseGas, tx.gasPrice, tx.gasToken,
-                tx.refundReceiver, tx.nonce
+                tx.refundReceiver, tx.signature
             );
         });
         it("should have 10 eth in Compound", async () => {
@@ -163,7 +164,7 @@ describe("AlphaLendAndBorrow.sol", () => {
             const tx = safeTx(contract.address, 0, redeemData, 0, 0, 0, 0, addressZero, addressZero, signature);
             await contract.execTransaction(
                 tx.to, tx.value, tx.data, tx.operation, tx.safeTxGas, tx.baseGas, tx.gasPrice, tx.gasToken,
-                tx.refundReceiver, tx.nonce
+                tx.refundReceiver, tx.signature
             );
             const balance = await ethers.provider.getBalance(contract.address);
             expect(ethers.utils.formatEther(balance)).to.equal("95.0");
@@ -179,7 +180,7 @@ describe("AlphaLendAndBorrow.sol", () => {
             const tx = safeTx(contract.address, 0, txFailure, 0, 0, 0, 0, addressZero, addressZero, signature);
             await expect(contract.execTransaction(
                 tx.to, tx.value, tx.data, tx.operation, tx.safeTxGas, tx.baseGas, tx.gasPrice, tx.gasToken,
-                tx.refundReceiver, tx.nonce
+                tx.refundReceiver, tx.signature
             )).to.be.reverted;
         });
         it("should revert by calling the function directly", async () => {
@@ -189,7 +190,7 @@ describe("AlphaLendAndBorrow.sol", () => {
             const tx = safeTx(contract.address, 0, redeemData, 0, 0, 0, 0, addressZero, addressZero, signature);
             await expect(contract.execTransaction(
                 tx.to, tx.value, tx.data, tx.operation, tx.safeTxGas, tx.baseGas, tx.gasPrice, tx.gasToken,
-                tx.refundReceiver, tx.nonce
+                tx.refundReceiver, tx.signature
             )).to.emit(contract, "RedeemEthFromCompound").withArgs(redeemAmount);
         });
     });
@@ -232,7 +233,7 @@ describe("AlphaLendAndBorrow.sol", () => {
             const tx = safeTx(contract.address, 0, data, 0, 0, 0, 0, addressZero, addressZero, signature);
             await expect(contract.execTransaction(
                 tx.to, tx.value, tx.data, tx.operation, tx.safeTxGas, tx.baseGas, tx.gasPrice, tx.gasToken,
-                tx.refundReceiver, tx.nonce
+                tx.refundReceiver, tx.signature
             )).to.emit(contract, "ExecutionSuccess");
             balance = await uniContract.balanceOf(contract.address);
             // balance converted to uni exchange rate.
@@ -247,7 +248,7 @@ describe("AlphaLendAndBorrow.sol", () => {
             const tx = safeTx(contract.address, 0, data, 0, 0, 0, 0, addressZero, addressZero, signature);
             await expect(contract.execTransaction(
                 tx.to, tx.value, tx.data, tx.operation, tx.safeTxGas, tx.baseGas, tx.gasPrice, tx.gasToken,
-                tx.refundReceiver, tx.nonce
+                tx.refundReceiver, tx.signature
             )).to.emit(contract, "SupplyErc20ToCompound").withArgs(amount, uniToken);
         });
     });
@@ -285,7 +286,7 @@ describe("AlphaLendAndBorrow.sol", () => {
             const tx = safeTx(contract.address, 0, supplyData, 0, 0, 0, 0, addressZero, addressZero, signature);
             await contract.execTransaction(
                 tx.to, tx.value, tx.data, tx.operation, tx.safeTxGas, tx.baseGas, tx.gasPrice, tx.gasToken,
-                tx.refundReceiver, tx.nonce
+                tx.refundReceiver, tx.signature
             );
         });
         it("should have correct balances", async () => {
@@ -302,7 +303,7 @@ describe("AlphaLendAndBorrow.sol", () => {
             const tx = safeTx(contract.address, 0, data, 0, 0, 0, 0, addressZero, addressZero, signature);
             await contract.execTransaction(
                 tx.to, tx.value, tx.data, tx.operation, tx.safeTxGas, tx.baseGas, tx.gasPrice, tx.gasToken,
-                tx.refundReceiver, tx.nonce
+                tx.refundReceiver, tx.signature
             );
             uniBalance = await uniContract.balanceOf(contract.address);
             expect(uniBalance).to.equal(amount); // we get uni tokens back.
@@ -314,7 +315,7 @@ describe("AlphaLendAndBorrow.sol", () => {
             const tx = safeTx(contract.address, 0, data, 0, 0, 0, 0, addressZero, addressZero, signature);
             await expect(contract.execTransaction(
                 tx.to, tx.value, tx.data, tx.operation, tx.safeTxGas, tx.baseGas, tx.gasPrice, tx.gasToken,
-                tx.refundReceiver, tx.nonce
+                tx.refundReceiver, tx.signature
             )).to.emit(contract, "RedeemErc20FromCompound").withArgs(amount, cUni);
         });
     });
@@ -355,7 +356,7 @@ describe("AlphaLendAndBorrow.sol", () => {
             const tx = safeTx(contract.address, 0, supplyData, 0, 0, 0, 0, addressZero, addressZero, signature);
             await contract.execTransaction(
                 tx.to, tx.value, tx.data, tx.operation, tx.safeTxGas, tx.baseGas, tx.gasPrice, tx.gasToken,
-                tx.refundReceiver, tx.nonce
+                tx.refundReceiver, tx.signature
             );
         });
         it("should have some collateral uni", async () => {
@@ -369,7 +370,7 @@ describe("AlphaLendAndBorrow.sol", () => {
             const tx = safeTx(contract.address, 0, data, 0, 0, 0, 0, addressZero, addressZero, signature);
             await contract.execTransaction(
                 tx.to, tx.value, tx.data, tx.operation, tx.safeTxGas, tx.baseGas, tx.gasPrice, tx.gasToken,
-                tx.refundReceiver, tx.nonce
+                tx.refundReceiver, tx.signature
             );
             const postBalance = await ethers.provider.getBalance(contract.address);
             expect(postBalance).to.equal(ethers.utils.parseEther("101"));
@@ -383,7 +384,7 @@ describe("AlphaLendAndBorrow.sol", () => {
             const tx = safeTx(contract.address, 0, txData, 0, 0, 0, 0, addressZero, addressZero, signature);
             await expect(contract.execTransaction(
                 tx.to, tx.value, tx.data, tx.operation, tx.safeTxGas, tx.baseGas, tx.gasPrice, tx.gasToken,
-                tx.refundReceiver, tx.nonce
+                tx.refundReceiver, tx.signature
             )).to.be.revertedWith("'GS013'");
         });
         it("should revert by calling the function directly", async () => {
@@ -393,7 +394,7 @@ describe("AlphaLendAndBorrow.sol", () => {
             const tx = safeTx(contract.address, 0, data, 0, 0, 0, 0, addressZero, addressZero, signature);
             await expect(contract.execTransaction(
                 tx.to, tx.value, tx.data, tx.operation, tx.safeTxGas, tx.baseGas, tx.gasPrice, tx.gasToken,
-                tx.refundReceiver, tx.nonce
+                tx.refundReceiver, tx.signature
             )).to.emit(contract, "BorrowEthFromCompound").withArgs(borrowAmount);
         });
     });
@@ -423,7 +424,7 @@ describe("AlphaLendAndBorrow.sol", () => {
             const tx = safeTx(contract.address, 0, supplyData, 0, 0, 0, 0, addressZero, addressZero, signature);
             await contract.execTransaction(
                 tx.to, tx.value, tx.data, tx.operation, tx.safeTxGas, tx.baseGas, tx.gasPrice, tx.gasToken,
-                tx.refundReceiver, tx.nonce
+                tx.refundReceiver, tx.signature
             );
         });
         it("should have 100 cEth", async () => {
@@ -443,7 +444,7 @@ describe("AlphaLendAndBorrow.sol", () => {
             const tx = safeTx(contract.address, 0, data, 0, 0, 0, 0, addressZero, addressZero, signature);
             await contract.execTransaction(
                 tx.to, tx.value, tx.data, tx.operation, tx.safeTxGas, tx.baseGas, tx.gasPrice, tx.gasToken,
-                tx.refundReceiver, tx.nonce
+                tx.refundReceiver, tx.signature
             );
             const postBalance = await uniContract.balanceOf(contract.address);
             expect(postBalance).to.equal(borrowAmount);
@@ -458,7 +459,7 @@ describe("AlphaLendAndBorrow.sol", () => {
             const tx = safeTx(contract.address, 0, txData, 0, 0, 0, 0, addressZero, addressZero, signature);
             await expect(contract.execTransaction(
                 tx.to, tx.value, tx.data, tx.operation, tx.safeTxGas, tx.baseGas, tx.gasPrice, tx.gasToken,
-                tx.refundReceiver, tx.nonce
+                tx.refundReceiver, tx.signature
             )).to.be.revertedWith("'GS013'");
         });
         it("should revert by calling the function directly", async () => {
@@ -468,7 +469,7 @@ describe("AlphaLendAndBorrow.sol", () => {
             const tx = safeTx(contract.address, 0, data, 0, 0, 0, 0, addressZero, addressZero, signature);
             await expect(contract.execTransaction(
                 tx.to, tx.value, tx.data, tx.operation, tx.safeTxGas, tx.baseGas, tx.gasPrice, tx.gasToken,
-                tx.refundReceiver, tx.nonce
+                tx.refundReceiver, tx.signature
             )).to.emit(contract, "BorrowErc20FromCompound").withArgs(borrowAmount, cUni);
         });
     });
@@ -502,13 +503,13 @@ describe("AlphaLendAndBorrow.sol", () => {
             let tx = safeTx(contract.address, 0, supplyData, 0, 0, 0, 0, addressZero, addressZero, signature);
             await contract.execTransaction(
                 tx.to, tx.value, tx.data, tx.operation, tx.safeTxGas, tx.baseGas, tx.gasPrice, tx.gasToken,
-                tx.refundReceiver, tx.nonce
+                tx.refundReceiver, tx.signature
             );
             // borrowing 10 eth
             tx = safeTx(contract.address, 0, borrowData, 0, 0, 0, 0, addressZero, addressZero, signature);
             await contract.execTransaction(
                 tx.to, tx.value, tx.data, tx.operation, tx.safeTxGas, tx.baseGas, tx.gasPrice, tx.gasToken,
-                tx.refundReceiver, tx.nonce
+                tx.refundReceiver, tx.signature
             );
         });
         it("should have a borrowed balance", async () => {
@@ -522,7 +523,7 @@ describe("AlphaLendAndBorrow.sol", () => {
             const tx = safeTx(contract.address, 0, data, 0, 0, 0, 0, addressZero, addressZero, signature);
             await contract.execTransaction(
                 tx.to, tx.value, tx.data, tx.operation, tx.safeTxGas, tx.baseGas, tx.gasPrice, tx.gasToken,
-                tx.refundReceiver, tx.nonce
+                tx.refundReceiver, tx.signature
             );
             const postBalance = await cEthContract.borrowBalanceCurrent(contract.address);
             expect(Math.trunc(Number(ethers.utils.formatEther(postBalance)))).to.be.lessThan(6);
@@ -535,7 +536,7 @@ describe("AlphaLendAndBorrow.sol", () => {
             const tx = safeTx(contract.address, 0, txData, 0, 0, 0, 0, addressZero, addressZero, signature);
             await expect(contract.execTransaction(
                 tx.to, tx.value, tx.data, tx.operation, tx.safeTxGas, tx.baseGas, tx.gasPrice, tx.gasToken,
-                tx.refundReceiver, tx.nonce
+                tx.refundReceiver, tx.signature
             )).to.be.revertedWith("'GS013'");
         });
         it("should revert by calling the function directly", async () => {
@@ -545,7 +546,7 @@ describe("AlphaLendAndBorrow.sol", () => {
             const tx = safeTx(contract.address, 0, data, 0, 0, 0, 0, addressZero, addressZero, signature);
             await expect(contract.execTransaction(
                 tx.to, tx.value, tx.data, tx.operation, tx.safeTxGas, tx.baseGas, tx.gasPrice, tx.gasToken,
-                tx.refundReceiver, tx.nonce
+                tx.refundReceiver, tx.signature
             )).to.emit(contract, "RepayEthToCompound").withArgs(repayAmount);
         });
     });
@@ -585,13 +586,13 @@ describe("AlphaLendAndBorrow.sol", () => {
             let tx = safeTx(contract.address, 0, supplyData, 0, 0, 0, 0, addressZero, addressZero, signature);
             await contract.execTransaction(
                 tx.to, tx.value, tx.data, tx.operation, tx.safeTxGas, tx.baseGas, tx.gasPrice, tx.gasToken,
-                tx.refundReceiver, tx.nonce
+                tx.refundReceiver, tx.signature
             );
             // borrowing 1000 uni
             tx = safeTx(contract.address, 0, borrowData, 0, 0, 0, 0, addressZero, addressZero, signature);
             await contract.execTransaction(
                 tx.to, tx.value, tx.data, tx.operation, tx.safeTxGas, tx.baseGas, tx.gasPrice, tx.gasToken,
-                tx.refundReceiver, tx.nonce
+                tx.refundReceiver, tx.signature
             );
         });
         it("should have UNI borrowed balance", async () => {
@@ -608,7 +609,7 @@ describe("AlphaLendAndBorrow.sol", () => {
             const tx = safeTx(contract.address, 0, data, 0, 0, 0, 0, addressZero, addressZero, signature);
             await contract.execTransaction(
                 tx.to, tx.value, tx.data, tx.operation, tx.safeTxGas, tx.baseGas, tx.gasPrice, tx.gasToken,
-                tx.refundReceiver, tx.nonce
+                tx.refundReceiver, tx.signature
             );
             const postBalance = await uniCompContract.borrowBalanceCurrent(contract.address);
             expect(Math.trunc(Number(ethers.utils.formatEther(postBalance)))).to.be.lessThan(501);
@@ -622,7 +623,7 @@ describe("AlphaLendAndBorrow.sol", () => {
             const tx = safeTx(contract.address, 0, txData, 0, 0, 0, 0, addressZero, addressZero, signature);
             await expect(contract.execTransaction(
                 tx.to, tx.value, tx.data, tx.operation, tx.safeTxGas, tx.baseGas, tx.gasPrice, tx.gasToken,
-                tx.refundReceiver, tx.nonce
+                tx.refundReceiver, tx.signature
             )).to.be.revertedWith("GS013");
         });
         it("should revert by calling the function directly", async () => {
@@ -632,7 +633,7 @@ describe("AlphaLendAndBorrow.sol", () => {
             const tx = safeTx(contract.address, 0, data, 0, 0, 0, 0, addressZero, addressZero, signature);
             await expect(contract.execTransaction(
                 tx.to, tx.value, tx.data, tx.operation, tx.safeTxGas, tx.baseGas, tx.gasPrice, tx.gasToken,
-                tx.refundReceiver, tx.nonce
+                tx.refundReceiver, tx.signature
             )).to.emit(contract, "RepayErc20ToCompound").withArgs(repayAmount, uniToken);
         });
     });
