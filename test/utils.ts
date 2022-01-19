@@ -26,11 +26,11 @@ interface SafeTx {
     gasPrice: number | string,
     gasToken: string,
     refundReceiver: string,
-    nonce: number | string
+    signature: string
 }
 
 export const safeTx = (_to: string, _value: BigNumber | number | string, _data: string, _operation: number, _safeTxGas: number | string,
-    _baseGas: number | string, _gasPrice: number | string, _gasToken: string, _refundReceiver: string, _nonce: number | string): SafeTx => {
+    _baseGas: number | string, _gasPrice: number | string, _gasToken: string, _refundReceiver: string, _signature: string): SafeTx => {
 
     return {
         to: _to,
@@ -42,11 +42,11 @@ export const safeTx = (_to: string, _value: BigNumber | number | string, _data: 
         gasPrice: _gasPrice,
         gasToken: _gasToken,
         refundReceiver: _refundReceiver,
-        nonce: _nonce
+        signature: _signature
     };
 }
 
 export const singletonAbi = ["function setup(address[] calldata _owners,uint256 _threshold)"];
-export const erc20Abi = ["function approve(address spender, uint rawAmount) external returns (bool)", "function balanceOf(address account) external view returns (uint)", "function transfer(address dst, uint rawAmount) external returns (bool)", "function balanceOfUnderlying(address account) external view returns (uint)", "function borrowBalanceCurrent(address account) external view returns (uint256)"];
+export const erc20Abi = ["function approve(address spender, uint rawAmount) external returns (bool)", "function balanceOf(address account) external view returns (uint)", "function transfer(address dst, uint rawAmount) external returns (bool)", "function balanceOfUnderlying(address account) external view returns (uint)", "function borrowBalanceCurrent(address account) external view returns (uint256)", "function totalSupply() external view returns (uint256)", "function name() external view returns (string memory)"];
 
 export const VERSION = "0.0.1"; // Beta version.
