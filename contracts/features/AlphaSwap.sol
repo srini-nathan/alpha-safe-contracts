@@ -28,6 +28,9 @@ contract AlphaSwap is SelfAuthorized {
         address tokenOut
     );
 
+    /**
+     @dev Swaps Eth to an ERC-20 token.
+     */
     function swapFromEth(
         uint256 _amountIn,
         ISwapRouter _swapRouter,
@@ -56,6 +59,9 @@ contract AlphaSwap is SelfAuthorized {
         emit SwapExactInputSingle(_amountIn, amountOut, _tokenIn, _tokenOut);
     }
 
+    /**
+     @dev Swaps an ERC-20 token to Eth.
+     */
     function swapToEth(
         uint256 _amountIn,
         ISwapRouter _swapRouter,
@@ -79,10 +85,13 @@ contract AlphaSwap is SelfAuthorized {
                 sqrtPriceLimitX96: 0 // ONLY FOR TESTING!
             });
         uint256 amountOut = swapRouter.exactInputSingle(params);
-        IWETH(WETH).withdraw(_amountIn);
+        IWETH(WETH).withdraw(amountOut);
         emit SwapExactInputSingle(_amountIn, amountOut, _tokenIn, _tokenOut);
     }
 
+    /**
+     @dev Swaps an ERC-20 token to an ERC-20 token.
+     */
     function swapErc20(
         uint256 _amountIn,
         ISwapRouter _swapRouter,
