@@ -46,8 +46,8 @@ describe("AlphaLendAndBorrow.sol", () => {
         AlphaSafe = await ethers.getContractFactory("AlphaSafe");
         singleton = await AlphaSafe.deploy();
         singletonAddress = singleton.address;
-        const tx = await proxyFactory.createProxyWithNonce(singletonAddress, data, 1111);
-        const receipt = await tx.wait();
+        const transaction = await proxyFactory.createProxyWithNonce(singletonAddress, data, 1111);
+        const receipt = await transaction.wait();
         proxyAddress = receipt.events[1].args.proxy;
         contract = new ethers.Contract(proxyAddress, abi, owner); //proxy
         // Funding the contract with 100 eth.
