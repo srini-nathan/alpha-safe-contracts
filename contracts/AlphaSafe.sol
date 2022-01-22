@@ -12,9 +12,10 @@ import "./common/Singleton.sol";
 import "./base/Executor.sol";
 import "./features/AlphaLendAndBorrow.sol";
 import "./features/AlphaSwap.sol";
+import "./features/AlphaStake.sol";
 
 /**
- * @notice PHASE - BETA - Modified version of Gnosis Safe to implement taylor-made features.
+ * @notice PHASE - Proof Of Concept - Modified version of Gnosis Safe to implement taylor-made features.
  * @title AlphaSafe - Wallet for Daos with multiple features.
  * @author Rodrigo Herrera I. FORK FROM GNOSIS SAFE + Additional Features: https://github.com/gnosis/safe-contracts/tree/main/contracts
  */
@@ -29,9 +30,10 @@ contract AlphaSafe is
     Enum,
     Executor,
     AlphaLendAndBorrow,
-    AlphaSwap
+    AlphaSwap,
+    AlphaStake
 {
-    string public constant VERSION = "0.0.1"; // BETA version.
+    string public constant VERSION = "0.0.1"; // Proof Of Concept.
 
     // keccak256(
     //     "EIP712Domain(uint256 chainId,address verifyingContract)"
