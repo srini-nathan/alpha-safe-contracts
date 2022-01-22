@@ -32,6 +32,7 @@ describe("AlphaLendAndBorrow.sol", () => {
     let AlphaSafe: any;
     let singleton: Contract;
     let singletonAddress: string;
+    let initialFunding: BigNumber;
 
     beforeEach(async () => {
         [owner] = await ethers.getSigners();
@@ -51,9 +52,10 @@ describe("AlphaLendAndBorrow.sol", () => {
         proxyAddress = receipt.events[1].args.proxy;
         contract = new ethers.Contract(proxyAddress, abi, owner); //proxy
         // Funding the contract with 100 eth.
+        initialFunding = ethers.utils.parseEther("100");
         await owner.sendTransaction({
             to: proxyAddress,
-            value: ethers.utils.parseEther("100")
+            value: initialFunding
         });
 
     });
@@ -65,7 +67,7 @@ describe("AlphaLendAndBorrow.sol", () => {
         });
         it("should have a balance of 100 ether", async () => {
             const balance = await ethers.provider.getBalance(contract.address);
-            expect(ethers.utils.formatEther(balance)).to.equal("100.0");
+            expect(balance).to.equal(initialFunding);
         });
         it("chainId should be '1' (mainnet)", async () => {
             const chainId = (await contract.getChainId()).toString();

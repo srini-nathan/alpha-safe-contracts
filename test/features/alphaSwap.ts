@@ -4,7 +4,6 @@ import { BigNumber, Contract, Signer } from "ethers";
 import hre from "hardhat";
 
 import { encodeFunctionData, executorSignature, singletonAbi, erc20Abi, safeTx } from "../utils";
-import { assert } from "console";
 
 
 //latest abi. 
@@ -69,7 +68,7 @@ describe("AlphaSwap.sol", () => {
         });
         it("should have a balance of 100 ether", async () => {
             const balance = await ethers.provider.getBalance(contract.address);
-            expect(ethers.utils.formatEther(balance)).to.equal("100.0");
+            expect(balance).to.equal(initialFunding);
         });
         it("chainId should be '1' (mainnet)", async () => {
             const chainId = (await contract.getChainId()).toString();
@@ -279,6 +278,8 @@ describe("AlphaSwap.sol", () => {
         });
     });
 });
+
+
 
 
 
