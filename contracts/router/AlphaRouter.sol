@@ -8,6 +8,6 @@ pragma solidity ^0.8.9;
  * We stronly belive that the frontend can be a critical point of failure, that is why we try to reduce the risks as much as possible.
  * @author Rodrigo Herrera I.
  */
-contract Router {
+contract AlphaRouter {
 
 }
