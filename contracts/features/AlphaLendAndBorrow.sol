@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: LGPL-3.0-only
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity ^0.8.9;
 
 import "../common/SelfAuthorized.sol";
 
@@ -64,8 +64,6 @@ contract AlphaLendAndBorrow is SelfAuthorized {
         public
         authorized
     {
-        // We avoid require statements to minimize bytecode. If the address is
-        // incorrect or the amount is 0, the transaction will revert.
         ICeth cEth = ICeth(_cEth);
         cEth.mint{value: _amount}();
         emit SupplyEthToCompound(_amount);
@@ -108,7 +106,7 @@ contract AlphaLendAndBorrow is SelfAuthorized {
             revert("ASLB07");
         }
         // Approve exact amount.
-        require(token.approve(_cErc20Contract, _amount) == true, "ASLBO4");
+        require(token.approve(_cErc20Contract, _amount), "ASLBO4");
         require(cToken.mint(_amount) == 0, "ASLB05");
         emit SupplyErc20ToCompound(_amount, _erc20Contract);
     }

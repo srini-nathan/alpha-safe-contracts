@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: LGPL-3.0-only
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity ^0.8.9;
 
 /// @title AlphaSafeStorage - Storage layout of the Safe contracts to be used in libraries.
 contract AlphaSafeStorage {

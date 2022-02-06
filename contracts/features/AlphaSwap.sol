@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: LGPL-3.0-only
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity ^0.8.9;
 
 import "../common/SelfAuthorized.sol";
 
@@ -56,6 +56,7 @@ contract AlphaSwap is SelfAuthorized {
                 sqrtPriceLimitX96: 0 // ONLY FOR TESTING!
             });
         uint256 amountOut = swapRouter.exactInputSingle(params);
+        require(amountOut > 0, "err code");
         emit SwapExactInputSingle(_amountIn, amountOut, _tokenIn, _tokenOut);
     }
 
@@ -85,6 +86,7 @@ contract AlphaSwap is SelfAuthorized {
                 sqrtPriceLimitX96: 0 // ONLY FOR TESTING!
             });
         uint256 amountOut = swapRouter.exactInputSingle(params);
+        require(amountOut > 0, "err code");
         IWETH(WETH).withdraw(amountOut);
         emit SwapExactInputSingle(_amountIn, amountOut, _tokenIn, _tokenOut);
     }
@@ -115,11 +117,12 @@ contract AlphaSwap is SelfAuthorized {
                 sqrtPriceLimitX96: 0 // ONLY FOR TESTING!
             });
         uint256 amountOut = swapRouter.exactInputSingle(params);
+        require(amountOut > 0, "err code");
         emit SwapExactInputSingle(_amountIn, amountOut, _tokenIn, _tokenOut);
     }
 
     /**
-     * @dev swaps a fixed amount of one token for a max possible amount of another token.
+     * @dev Swaps a fixed amount of one token for a max possible amount of another token.
      * @param _amountIn the amount of the underlying token to exchange.
      * @param _swapRouter the router contract address.
      * @param _tokenIn the contract address of the inbound token.

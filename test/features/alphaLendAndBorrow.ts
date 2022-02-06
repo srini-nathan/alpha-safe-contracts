@@ -4,7 +4,7 @@ import { BigNumber, Contract, Signer } from "ethers";
 import hre from "hardhat";
 
 
-import { encodeFunctionData, executorSignature, singletonAbi, erc20Abi, safeTx } from "../utils";
+import { encodeFunctionData, executorSignature, singletonAbi, erc20Abi, safeTx, addressZero } from "../utils";
 
 
 
@@ -12,7 +12,6 @@ import { encodeFunctionData, executorSignature, singletonAbi, erc20Abi, safeTx }
 const { abi } = require("../../artifacts/contracts/AlphaSafe.sol/AlphaSafe.json");
 
 const cEth = "0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5"; //Address of compound eth on mainnet.
-const addressZero = "0x0000000000000000000000000000000000000000";
 const uniToken = "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984"; //Address of uni token mainnet.
 const cUni = "0x35A18000230DA775CAc24873d00Ff85BccdeD550"; // Address of cUni token on mainnet.
 const comptroller = "0x3d9819210a31b4961b30ef54be2aed79b9c9cd3b"; //Comptroller address on mainnet.

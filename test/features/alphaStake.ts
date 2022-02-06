@@ -5,13 +5,13 @@ import hre from "hardhat";
 
 require("dotenv").config();
 
-import { encodeFunctionData, executorSignature, singletonAbi, erc20Abi, safeTx } from "../utils";
+import { encodeFunctionData, executorSignature, singletonAbi, erc20Abi, safeTx, addressZero } from "../utils";
 
 //latest abi
 const { abi } = require("../../artifacts/contracts/AlphaSafe.sol/AlphaSafe.json");
 
-const addressZero = "0x0000000000000000000000000000000000000000";
 const rEth = "0xae78736Cd615f374D3085123A210448E74Fc6393"; // Rocket Pool ETH.
+const rocketStorage = "0x1d8f8f00cfa6758d7bE78336684788Fb0ee0Fa46";
 
 describe("AlphaStake.sol", () => {
     let owner: Signer;
@@ -83,7 +83,7 @@ describe("AlphaStake.sol", () => {
 
         beforeEach(async () => {
             stakingAmount = ethers.utils.parseEther("1");
-            stakingData = encodeFunctionData(abi, "stakeEth", [stakingAmount]);
+            stakingData = encodeFunctionData(abi, "stakeEth", [stakingAmount, rocketStorage]);
         });
         it("should not have any rEth", async () => {
             const balance = await rEthContract.balanceOf(contract.address);
@@ -97,7 +97,7 @@ describe("AlphaStake.sol", () => {
             );
         });
         it("should revert by calling the function directly", async () => {
-            await expect(contract.stakeEth(stakingAmount)).to.be.revertedWith("'GS031'");
+            await expect(contract.stakeEth(stakingAmount, rocketStorage)).to.be.revertedWith("'GS031'");
         });
         it("should emit correct events", async () => {
             const tx = safeTx(contract.address, 0, stakingData, 0, 0, 0, 0, addressZero, addressZero, signature);
@@ -107,7 +107,6 @@ describe("AlphaStake.sol", () => {
             )).to.emit(contract, "StakeEth").withArgs(stakingAmount);
         });
     });
-
 });
 
 

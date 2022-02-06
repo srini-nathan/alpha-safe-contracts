@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: LGPL-3.0-only
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity ^0.8.9;
+
 import "../libraries/AlphaSafeStorage.sol";
 
 /// @title Migration - migrates a Safe contract from 1.3.0 to 1.2.0

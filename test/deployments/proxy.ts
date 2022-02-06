@@ -2,9 +2,7 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import { Contract, Signer } from "ethers";
 
-import { encodeFunctionData, singletonAbi, VERSION } from "../utils";
-
-const addressZero = "0x0000000000000000000000000000000000000000";
+import { encodeFunctionData, singletonAbi, VERSION, addressZero } from "../utils";
 
 
 describe("proxy deployment", () => {

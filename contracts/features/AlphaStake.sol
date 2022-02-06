@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: LGPL-3.0-only
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity ^0.8.9;
 
 import "../common/SelfAuthorized.sol";
 
@@ -20,9 +20,6 @@ interface IRocketETHToken {
  * @author Rodrigo Herrera I.
  */
 contract AlphaStake is SelfAuthorized {
-    address public constant ROCKET_STORAGE =
-        0x1d8f8f00cfa6758d7bE78336684788Fb0ee0Fa46;
-
     event StakeEth(uint256 amount);
     event UnstakeEth(uint256 amount);
 
@@ -30,10 +27,13 @@ contract AlphaStake is SelfAuthorized {
      * @dev Stakes Eth and gets rEth in return.
      * @param _amount The amount of Eth to stake.
      */
-    function stakeEth(uint256 _amount) public authorized {
+    function stakeEth(uint256 _amount, address _rocketStorage)
+        public
+        authorized
+    {
         require(_amount > 0, "ALS01");
         require(address(this).balance >= _amount, "ALS02");
-        IRocketStorage rocketStorage = IRocketStorage(ROCKET_STORAGE);
+        IRocketStorage rocketStorage = IRocketStorage(_rocketStorage);
         // Load contracts.
         address rocketDepositPoolAddress = rocketStorage.getAddress(
             keccak256(abi.encodePacked("contract.address", "rocketDepositPool"))
@@ -50,9 +50,12 @@ contract AlphaStake is SelfAuthorized {
      * after the staked.
      * @param _amount The amount of rEth to unstacke.
      */
-    function withdrawStakedEth(uint256 _amount) public authorized {
+    function withdrawStakedEth(uint256 _amount, address _rocketStorage)
+        public
+        authorized
+    {
         require(_amount > 0, "ALS01");
-        IRocketStorage rocketStorage = IRocketStorage(ROCKET_STORAGE);
+        IRocketStorage rocketStorage = IRocketStorage(_rocketStorage);
         address rocketETHTokenAddress = rocketStorage.getAddress(
             keccak256(abi.encodePacked("contract.address", "rocketETHToken"))
         );

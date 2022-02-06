@@ -2,19 +2,17 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import { Contract, Signer } from "ethers";
 
-import { VERSION } from "../utils";
+import { VERSION, addressZero } from "../utils";
 
 describe("AlphaSafe.sol deployment", () => {
     let hacker: Signer;
     let AlphaSafe: any;
     let baseContract: Contract;
-    let addressZero: string;
 
     beforeEach(async () => {
         [hacker] = await ethers.getSigners();
         AlphaSafe = await ethers.getContractFactory("AlphaSafe");
         baseContract = await AlphaSafe.deploy();
-        addressZero = "0x0000000000000000000000000000000000000000";
     });
 
     describe("Base contract correct deployemnent", () => {

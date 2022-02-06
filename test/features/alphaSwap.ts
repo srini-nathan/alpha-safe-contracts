@@ -3,13 +3,12 @@ import { ethers } from "hardhat";
 import { BigNumber, Contract, Signer } from "ethers";
 import hre from "hardhat";
 
-import { encodeFunctionData, executorSignature, singletonAbi, erc20Abi, safeTx } from "../utils";
+import { encodeFunctionData, executorSignature, singletonAbi, erc20Abi, safeTx, addressZero } from "../utils";
 
 
 //latest abi. 
 const { abi } = require("../../artifacts/contracts/AlphaSafe.sol/AlphaSafe.json");
 
-const addressZero = "0x0000000000000000000000000000000000000000";
 const DAI = "0x6B175474E89094C44Da98b954EedeAC495271d0F";
 const WETH = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
 const swapRouter = "0xE592427A0AEce92De3Edee1F18E0157C05861564";
